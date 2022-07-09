@@ -9,7 +9,7 @@ public class Basics {
             System.out.println("Hello Equal");
         }
         Scanner input = new Scanner(System.in);
-        System.out.println( getTempeatureFarenheit(.nextFloat())));
+        System.out.println( getTempeatureFarenheit(input.nextFloat()));
     }
 
     public static  float getTempeatureFarenheit(float celsius){
