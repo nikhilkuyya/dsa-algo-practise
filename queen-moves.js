@@ -28,20 +28,9 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
         return reg;
     },new Map());
 
-    const queenMovestoLeft = [];
-    let startMovTemp = queenCol;
-    let isObstacled = false;
-    while(startMovTemp >= 0 && !isObstacled) {
-        const rowRegistry = obstacleRegistry.get(queenRow);
-        if(rowRegistry) {
-            isObstacled = rowRegistry.has(startMovTemp);
-        }
-        if(!isObstacled) {
-            queenMovestoLeft.push([queenRow, startMovTemp]);
-        }        
-        startMovTemp--
-    }
-    const queenMovestoRight = [];
+    const queenMovestoLeft = getMoves(queenCol, queenRow, (col) => col - 1, (col) => col >= 0, obstacleRegistry);
+
+    const queenMovestoRight = [];    
     for (let startMovTemp = queenCol; startMovTemp <= n; startMovTemp++) {
         queenMovestoRight.push([queenRow, startMovTemp]);
     }
@@ -97,6 +86,23 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
     const board = printBoard(n, queenMoves, obstacles);
     console.log(board);
 
+}
+
+function getMoves(startPosition, constant, updatePosition, conditionToCheck,registry){
+    const arr = [];
+    let startMovTemp = startPosition;
+    let isObstacled = false;
+    while(conditionToCheck(startMovTemp) && !isObstacled) {
+        const rowRegistry = registry.get(startMovTemp);
+        if(rowRegistry) {
+            isObstacled = rowRegistry.has(startMovTemp);
+        }
+        if(!isObstacled) {
+            arr.push([constant, startMovTemp]);
+        }        
+        startMovTemp = updatePosition(startMovTemp);
+    }
+    return arr.slice();
 }
 
 // board start with bottom left corner and end with top right corner.
