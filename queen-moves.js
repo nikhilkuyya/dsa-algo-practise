@@ -31,9 +31,12 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
     const queenMovestoLeft = [];
     let startMovTemp = queenCol;
     let isObstacled = false;
-    while(startMovTemp >= 0 && isObstacled) {
-        isObstacled = obstacleRegistry.get(queenRow).has(startMovTemp);
-        if(!isObstacled){
+    while(startMovTemp >= 0 && !isObstacled) {
+        const rowRegistry = obstacleRegistry.get(queenRow);
+        if(rowRegistry) {
+            isObstacled = rowRegistry.has(startMovTemp);
+        }
+        if(!isObstacled) {
             queenMovestoLeft.push([queenRow, startMovTemp]);
         }        
         startMovTemp--
