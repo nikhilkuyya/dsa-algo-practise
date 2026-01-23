@@ -117,8 +117,9 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
         startPosition: 1,
         constant: 0,
         conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => {
+            const row = queenPosition[0];
             const col = queenPosition[1];
-            return (startMovTemp + col) <= sizeOfBoard;
+            return ((startMovTemp + row) <= sizeOfBoard) && (startMovTemp < col);
         },
         getPosition: (constant, startMovTemp, queenPosition) => { return [queenPosition[0] + startMovTemp, queenPosition[1] + startMovTemp]; },
         queenPosition,
@@ -132,7 +133,8 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
         constant: 0,
         conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => {
             const row = queenPosition[0];
-            return startMovTemp + row <= sizeOfBoard;
+            const col = queenPosition[1];
+            return (startMovTemp  < row) && ((startMovTemp + col) <= sizeOfBoard);
         },
         getPosition: (constant, startMovTemp, queenPosition) => { return [queenPosition[0] - startMovTemp, queenPosition[1] + startMovTemp]; },
         queenPosition,
@@ -146,7 +148,8 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
         constant: 0,
         conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => {
             const row = queenPosition[0];
-            return startMovTemp + row <= sizeOfBoard;
+            const col = queenPosition[1];
+            return ((startMovTemp + row) <= sizeOfBoard) && (startMovTemp < col);
         },
         getPosition: (constant, startMovTemp, queenPosition) => { return [queenPosition[0] + startMovTemp, queenPosition[1] - startMovTemp]; },
         queenPosition,
@@ -211,3 +214,9 @@ boardWithMoves = console.log(printBoard(4, possibleMoves, []), possibleMoves, po
 console.log('test case 5 with board of 1 and queen at 1,1');
 possibleMoves = queensAttack(1, 0, 1, 1, []);
 boardWithMoves = console.log(printBoard(1, possibleMoves, []), possibleMoves, possibleMoves.length);
+
+
+// 5 3 4 3 5 5 4 2 2 3
+console.log('test case 6 with board of 5 and queen at 4,3 and obstacles at 5,5, 4,2, 2,3');
+possibleMoves = queensAttack(5, 3, 4, 3, [[5, 5], [4, 2], [2, 3]]);
+boardWithMoves = console.log(printBoard(5, possibleMoves, [[5, 5], [4, 2], [2, 3]]), possibleMoves, possibleMoves.length);
