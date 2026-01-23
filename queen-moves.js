@@ -1,3 +1,29 @@
+function getMoves({ startPosition,
+    constant,
+    getPosition,
+    updatePosition,
+    conditionToCheck,
+    registry,
+    queenPosition,
+    sizeOfBoard
+}) {
+    const arr = [];
+    let startMovTemp = startPosition;
+    let isObstacled = false;
+    while (conditionToCheck({ startMovTemp, constant, queenPosition, sizeOfBoard }) && !isObstacled) {
+        const position = getPosition(constant, startMovTemp, queenPosition)
+        if (registry) {
+            const [row, col] = position;
+            isObstacled = registry.has(row) && registry.get(row).has(col);
+        }
+        if (!isObstacled) {
+            arr.push(position);
+        }
+        startMovTemp = updatePosition(startMovTemp);
+    }
+    return arr.slice();
+}
+
 /*
  * Complete the 'queensAttack' function below.
  *
@@ -10,99 +36,131 @@
  *  5. 2D_INTEGER_ARRAY obstacles
  */
 
+
+
 function queensAttack(n, k, r_q, c_q, obstacles) {
     // Write your code here    
     const queenRow = r_q;
     const queenCol = c_q;
-    const positions = (new Array(n)).fill(0).map((_, index) => index + 1);
-    
-    const obstacleRegistry = obstacles.reduce((reg,obs) => { 
-        const [key,value] = obs;
+    const queenPosition = [queenRow, queenCol];
+    const obstacleRegistry = obstacles.reduce((reg, obs) => {
+        const [key, value] = obs;
         const alreadyValue = reg.get(key);
-        if(alreadyValue) {
+        if (alreadyValue) {
             alreadyValue.add(value);
-        }else {
+        } else {
             const valueSet = new Set();
             reg.set(key, valueSet.add(value))
         }
         return reg;
-    },new Map());
+    }, new Map());
 
-    const queenMovestoLeft = getMoves({startPosition: queenCol, constant: queenRow, position: (constant, startMovTemp) => [constant, startMovTemp], updatePosition: (col) => col - 1, conditionToCheck: (col) => col >= 0, registry: obstacleRegistry});
-
-    const queenMovestoRight = getMoves({startPosition: queenCol, constant: queenRow, position: (constant, startMovTemp) => [constant, startMovTemp], updatePosition: (col) => col + 1, conditionToCheck: (col) => col <= n, registry: obstacleRegistry});
-
-    const queenMovesToUp = getMoves({startPosition: queenRow, constant: queenCol, position: (constant, startMovTemp) => [startMovTemp, constant], updatePosition: (row) => row + 1, conditionToCheck: (row) => row <= n, registry: obstacleRegistry});
-
-    const queenMovesToDown = getMoves({startPosition: queenRow, constant: queenCol, position: (constant, startMovTemp) => [startMovTemp, constant], updatePosition: (row) => row - 1, conditionToCheck: (row) => row >= 0, registry: obstacleRegistry});
-
-    const centerForMainDiagnal = [queenRow, queenCol];
-    const initialMainDiagnal = [centerForMainDiagnal];
-    const mainDiagnal = positions.reduce((diagTemp, pos) => {
-        const downSidePos = [queenRow - pos, queenCol - pos];
-        const upSidePos = [queenRow + pos, queenCol + pos];
-        const combinedPos = [downSidePos, upSidePos];
-        diagTemp.push(combinedPos);
-        return diagTemp;
-    }, [initialMainDiagnal]);
-
-    // TODO: Cleanup the logic for antiMainDiagnal
-    const antiMainDiagnal = mainDiagnal.map((positionArr, index) => {
-        if (index === 0) {
-            return positionArr;
-        }
-        const [downSidePos, upSidePos] = positionArr;
-
-        const mirrorDownSidePos = [downSidePos[0] + (2 * (index)), downSidePos[1]];
-        const mirrorUpSidePos = [upSidePos[0] - (2 * index), upSidePos[1]];
-        return [mirrorDownSidePos, mirrorUpSidePos];
+    const queenMovestoLeft = getMoves({
+        startPosition: queenCol - 1,
+        constant: queenRow,
+        getPosition: (constant, startMovTemp) => [constant, startMovTemp],
+        updatePosition: (col) => col - 1,
+        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => startMovTemp > 0,
+        registry: obstacleRegistry,
+        queenPosition: queenPosition,
+        sizeOfBoard: n,
     });
 
-
-    const diagnalMoves = [...mainDiagnal, ...antiMainDiagnal].flat();
-    // here we removing the same center position of the diagnal moves as it same reference.
-    const uniqueDiagnalMoves = [...new Set(diagnalMoves)];
-    const filteredDiagnalMoves = uniqueDiagnalMoves.filter((pos) => {
-        const rowPos = pos[0];
-        const colPos = pos[1];
-        const rowInBox = rowPos >= 1 && rowPos <= n;
-        const colInBox = colPos >= 1 && colPos <= n;
-        const isInBox = rowInBox && colInBox;
-        return isInBox;
+    const queenMovestoRight = getMoves({
+        startPosition: queenCol + 1,
+        constant: queenRow,
+        getPosition: (constant, startMovTemp) => [constant, startMovTemp],
+        updatePosition: (col) => col + 1,
+        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => startMovTemp <= sizeOfBoard,
+        registry: obstacleRegistry,
+        queenPosition: queenPosition,
+        sizeOfBoard: n
     });
 
-    const queenMoves = [...queenMovestoLeft, ...queenMovestoRight, ...queenMovesToUp,...queenMovesToDown, ...filteredDiagnalMoves];
+    const queenMovesToUp = getMoves({
+        startPosition: queenRow + 1,
+        constant: queenCol,
+        getPosition: (constant, startMovTemp) => [startMovTemp, constant],
+        updatePosition: (row) => row + 1,
+        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => startMovTemp <= sizeOfBoard,
+        registry: obstacleRegistry,
+        queenPosition: queenPosition,
+        sizeOfBoard: n
+    });
 
-    // plot the queen moves on the board    
-    const boardLeft = printBoard(n, queenMovestoLeft, obstacles);
-    console.log(boardLeft);
-    const boardRight = printBoard(n, queenMovestoRight, obstacles);
-    console.log(boardRight);
-    const boardUp = printBoard(n, queenMovesToUp, obstacles);
-    console.log(boardUp);
-    const boardDown = printBoard(n, queenMovesToDown, obstacles);
-    console.log(boardDown);
-    const boardDiagnal = printBoard(n, filteredDiagnalMoves, obstacles);
-    console.log(boardDiagnal);
+    const queenMovesToDown = getMoves({
+        startPosition: queenRow - 1,
+        constant: queenCol,
+        getPosition: (constant, startMovTemp) => [startMovTemp, constant],
+        updatePosition: (row) => row - 1,
+        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => startMovTemp > 0,
+        registry: obstacleRegistry,
+        queenPosition: queenPosition,
+        sizeOfBoard: n
+    });
 
+    const mainDiagnalDown = getMoves({
+        startPosition: 1,
+        constant: 0,
+        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => {
+            const col = queenPosition[1];
+            return startMovTemp < col;
+        },
+        getPosition: (constant, startMovTemp, queenPosition) => { return [queenPosition[0] - startMovTemp, queenPosition[1] - startMovTemp]; },
+        queenPosition,
+        registry: obstacleRegistry,
+        sizeOfBoard: n,
+        updatePosition: (position) => position + 1
+    })
+
+    const mainDiagnalUps = getMoves({
+        startPosition: 1,
+        constant: 0,
+        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => {
+            const col = queenPosition[1];
+            return (startMovTemp + col) <= sizeOfBoard;
+        },
+        getPosition: (constant, startMovTemp, queenPosition) => { return [queenPosition[0] + startMovTemp, queenPosition[1] + startMovTemp]; },
+        queenPosition,
+        registry: obstacleRegistry,
+        sizeOfBoard: n,
+        updatePosition: (position) => position + 1
+    })
+
+    const antiMainDiagnalDown = getMoves({
+        startPosition: 1,
+        constant: 0,
+        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => {
+            const row = queenPosition[0];
+            return startMovTemp + row <= sizeOfBoard;
+        },
+        getPosition: (constant, startMovTemp, queenPosition) => { return [queenPosition[0] - startMovTemp, queenPosition[1] + startMovTemp]; },
+        queenPosition,
+        registry: obstacleRegistry,
+        sizeOfBoard: n,
+        updatePosition: (position) => position + 1
+    })
+
+    const antiMainDiagnalUps = getMoves({
+        startPosition: 1,
+        constant: 0,
+        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => {
+            const row = queenPosition[0];
+            return startMovTemp + row <= sizeOfBoard;
+        },
+        getPosition: (constant, startMovTemp, queenPosition) => { return [queenPosition[0] + startMovTemp, queenPosition[1] - startMovTemp]; },
+        queenPosition,
+        registry: obstacleRegistry,
+        sizeOfBoard: n,
+        updatePosition: (position) => position + 1
+    })
+    console.log({mainDiagnalDown, mainDiagnalUps, antiMainDiagnalDown, antiMainDiagnalUps});
+    const totalMoves = [...queenMovestoLeft, ...queenMovestoRight, ...queenMovesToUp, ...queenMovesToDown, ...mainDiagnalDown, ...mainDiagnalUps, ...antiMainDiagnalDown, ...antiMainDiagnalUps];
+    return totalMoves;
 }
 
-function getMoves({startPosition, constant, position, updatePosition, conditionToCheck,registry}){
-    const arr = [];
-    let startMovTemp = startPosition;
-    let isObstacled = false;
-    while(conditionToCheck(startMovTemp) && !isObstacled) {
-        const rowRegistry = registry.get(startMovTemp);
-        if(rowRegistry) {
-            isObstacled = rowRegistry.has(startMovTemp);
-        }
-        if(!isObstacled) {
-            arr.push(position(constant, startMovTemp));
-        }        
-        startMovTemp = updatePosition(startMovTemp);
-    }
-    return arr.slice();
-}
+// Refactor the object properties to make it more readable.
+
 
 // board start with bottom left corner and end with top right corner.
 function printBoard(n, filteredDiagnalMoves, obstacles) {
@@ -130,4 +188,26 @@ function printBoard(n, filteredDiagnalMoves, obstacles) {
     return reversedRowBoard;
 }
 
-queensAttack(5, 0, 4, 3, []);
+console.log('test case 1 with board of 6 and queen at 3,3');
+let possibleMoves = queensAttack(6, 0, 3, 3, []);
+let boardWithMoves = console.log(printBoard(6, possibleMoves, []), possibleMoves, possibleMoves.length);
+
+console.log('test case 2 with board of 5 and queen at 3,3');
+possibleMoves = queensAttack(5, 1, 3, 3, []);
+boardWithMoves = console.log(printBoard(5, possibleMoves, []), possibleMoves, possibleMoves.length);
+
+console.log('test case 3 with board of 5 and queen at 3,3 and obstacle at 4,4');
+possibleMoves = queensAttack(5, 1, 3, 3, [[4, 4]]);
+boardWithMoves = console.log(printBoard(5, possibleMoves, [[4, 4]]), possibleMoves, possibleMoves.length);
+console.log('test case 3 with board of 5 and queen at 3,3 and obstacle at 2,2');
+possibleMoves = queensAttack(5, 1, 3, 3, [[2, 2]]);
+boardWithMoves = console.log(printBoard(5, possibleMoves, [[2, 2]]), possibleMoves, possibleMoves.length);
+
+// 4 0 4 4
+console.log('test case 4 with board of 4 and queen at 4,4');
+possibleMoves = queensAttack(4, 0, 4, 4, []);
+boardWithMoves = console.log(printBoard(4, possibleMoves, []), possibleMoves, possibleMoves.length);
+// 1 0 1 1
+console.log('test case 5 with board of 1 and queen at 1,1');
+possibleMoves = queensAttack(1, 0, 1, 1, []);
+boardWithMoves = console.log(printBoard(1, possibleMoves, []), possibleMoves, possibleMoves.length);
