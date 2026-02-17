@@ -7,21 +7,22 @@ function getMoves({ startPosition,
     queenPosition,
     sizeOfBoard
 }) {
-    const arr = [];
+    let count = 0;
     let startMovTemp = startPosition;
     let isObstacled = false;
-    while (conditionToCheck({ startMovTemp, constant, queenPosition, sizeOfBoard }) && !isObstacled) {
-        const position = getPosition(constant, startMovTemp, queenPosition)
+    let position = getPosition(constant, startMovTemp, queenPosition);
+    while (conditionToCheck({ position, startMovTemp, constant, queenPosition, sizeOfBoard }) && !isObstacled) {
+        position = getPosition(constant, startMovTemp, queenPosition)
         if (registry) {
             const [row, col] = position;
             isObstacled = registry.has(row) && registry.get(row).has(col);
         }
         if (!isObstacled) {
-            arr.push(position);
+            count++;
         }
         startMovTemp = updatePosition(startMovTemp);
     }
-    return arr.slice();
+    return count;
 }
 
 /*
@@ -35,9 +36,6 @@ function getMoves({ startPosition,
  *  4. INTEGER c_q
  *  5. 2D_INTEGER_ARRAY obstacles
  */
-
-
-
 function queensAttack(n, k, r_q, c_q, obstacles) {
     // Write your code here    
     const queenRow = r_q;
@@ -60,7 +58,11 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
         constant: queenRow,
         getPosition: (constant, startMovTemp) => [constant, startMovTemp],
         updatePosition: (col) => col - 1,
-        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => startMovTemp > 0,
+        conditionToCheck: ({ position,  queenPosition, sizeOfBoard }) => {
+            const [queenRow, queenCol] = queenPosition;
+            const [ row, col ] = position;
+            return row === queenRow && col < queenCol && col > 0;
+        },
         registry: obstacleRegistry,
         queenPosition: queenPosition,
         sizeOfBoard: n,
@@ -71,7 +73,11 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
         constant: queenRow,
         getPosition: (constant, startMovTemp) => [constant, startMovTemp],
         updatePosition: (col) => col + 1,
-        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => startMovTemp <= sizeOfBoard,
+        conditionToCheck: ({ position, queenPosition, sizeOfBoard }) => {
+            const [queenRow, queenCol] = queenPosition;
+            const [ row, col ] = position;
+            return row === queenRow && col > queenCol && col <= sizeOfBoard;
+        },
         registry: obstacleRegistry,
         queenPosition: queenPosition,
         sizeOfBoard: n
@@ -82,7 +88,11 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
         constant: queenCol,
         getPosition: (constant, startMovTemp) => [startMovTemp, constant],
         updatePosition: (row) => row + 1,
-        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => startMovTemp <= sizeOfBoard,
+        conditionToCheck: ({ position, queenPosition, sizeOfBoard }) => {
+            const [queenRow, queenCol] = queenPosition;
+            const [ row, col ] = position;
+            return col === queenCol && row > queenRow && row <= sizeOfBoard;
+        },
         registry: obstacleRegistry,
         queenPosition: queenPosition,
         sizeOfBoard: n
@@ -93,7 +103,11 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
         constant: queenCol,
         getPosition: (constant, startMovTemp) => [startMovTemp, constant],
         updatePosition: (row) => row - 1,
-        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => startMovTemp > 0,
+        conditionToCheck: ({ position, queenPosition, sizeOfBoard }) => {
+            const [queenRow, queenCol] = queenPosition;
+            const [ row, col ] = position;
+            return col === queenCol && row < queenRow && row > 0;
+        },
         registry: obstacleRegistry,
         queenPosition: queenPosition,
         sizeOfBoard: n
@@ -102,11 +116,15 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
     const mainDiagnalDown = getMoves({
         startPosition: 1,
         constant: 0,
-        conditionToCheck: ({ startMovTemp, constant, queenPosition, sizeOfBoard }) => {
-            const col = queenPosition[1];
-            return startMovTemp < col;
+        conditionToCheck: ({ position, queenPosition, sizeOfBoard }) => {
+            const [queenRow, queenCol] = queenPosition;
+            const [ row, col ] = position;
+            console.log({ row, col, queenRow, queenCol });
+            return row < queenRow && col < queenCol && row > 0 && col > 0;
         },
-        getPosition: (constant, startMovTemp, queenPosition) => { return [queenPosition[0] - startMovTemp, queenPosition[1] - startMovTemp]; },
+        getPosition: (constant, startMovTemp, queenPosition) => { 
+            return [queenPosition[0] - startMovTemp, queenPosition[1] - startMovTemp]; 
+        },
         queenPosition,
         registry: obstacleRegistry,
         sizeOfBoard: n,
@@ -121,7 +139,9 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
             const col = queenPosition[1];
             return ((startMovTemp + row) <= sizeOfBoard) && (startMovTemp < col);
         },
-        getPosition: (constant, startMovTemp, queenPosition) => { return [queenPosition[0] + startMovTemp, queenPosition[1] + startMovTemp]; },
+        getPosition: (constant, startMovTemp, queenPosition) => {
+             return [queenPosition[0] + startMovTemp, queenPosition[1] + startMovTemp]; 
+        },
         queenPosition,
         registry: obstacleRegistry,
         sizeOfBoard: n,
@@ -157,13 +177,12 @@ function queensAttack(n, k, r_q, c_q, obstacles) {
         sizeOfBoard: n,
         updatePosition: (position) => position + 1
     })
-    console.log({mainDiagnalDown, mainDiagnalUps, antiMainDiagnalDown, antiMainDiagnalUps});
-    const totalMoves = [...queenMovestoLeft, ...queenMovestoRight, ...queenMovesToUp, ...queenMovesToDown, ...mainDiagnalDown, ...mainDiagnalUps, ...antiMainDiagnalDown, ...antiMainDiagnalUps];
-    return totalMoves;
+
+    const totalMoves = [queenMovestoLeft, queenMovestoRight, queenMovesToUp, queenMovesToDown, mainDiagnalDown, mainDiagnalUps, antiMainDiagnalDown, antiMainDiagnalUps];
+    return totalMoves.reduce((acc, curr) => acc + curr, 0);
 }
 
 // Refactor the object properties to make it more readable.
-
 
 // board start with bottom left corner and end with top right corner.
 function printBoard(n, filteredDiagnalMoves, obstacles) {
@@ -191,7 +210,11 @@ function printBoard(n, filteredDiagnalMoves, obstacles) {
     return reversedRowBoard;
 }
 
-console.log('test case 1 with board of 6 and queen at 3,3');
+
+/**
+ * 
+ * 
+ * console.log('test case 1 with board of 6 and queen at 3,3');
 let possibleMoves = queensAttack(6, 0, 3, 3, []);
 let boardWithMoves = console.log(printBoard(6, possibleMoves, []), possibleMoves, possibleMoves.length);
 
@@ -220,3 +243,9 @@ boardWithMoves = console.log(printBoard(1, possibleMoves, []), possibleMoves, po
 console.log('test case 6 with board of 5 and queen at 4,3 and obstacles at 5,5, 4,2, 2,3');
 possibleMoves = queensAttack(5, 3, 4, 3, [[5, 5], [4, 2], [2, 3]]);
 boardWithMoves = console.log(printBoard(5, possibleMoves, [[5, 5], [4, 2], [2, 3]]), possibleMoves, possibleMoves.length);
+ * 
+ */
+
+const expected = 308369;
+const output = queensAttack(100000, 0, 4187, 3169, []);
+console.log(output, expected);
