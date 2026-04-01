@@ -33,6 +33,30 @@ export class Heap {
 
     pop() {
         const item = this.#arr[0];
-        return item;
+        let currentPosition  = 0;
+        let leftChildPos = 2 * currentPosition + 1;
+        let rightChildPos = 2 * currentPosition + 2;
+        const limitPos = this.#arr.length - 1;
+        while(leftChildPos <= limitPos) {
+            const rightChildValue = this.#arr[rightChildPos];
+            const leftChildValue = this.#arr[leftChildPos];
+            if (rightChildPos > limitPos) {
+                this.#arr[leftChildPos] = item;
+                this.#arr[currentPosition] = leftChildValue;
+                currentPosition = leftChildPos;
+            }else {
+                const maxChildPosition = this.#comparator(leftChildValue, rightChildValue) ? leftChildPos : rightChildPos;
+                this.#arr[currentPosition] = this.#arr[maxChildPosition];
+                this.#arr[maxChildPosition] = item;
+                currentPosition = maxChildPosition;
+            }
+            leftChildPos = 2 * currentPosition + 1;rightChildPos = 2 * currentPosition + 2;
+        }
+        if(currentPosition !== limitPos) {
+            this.#arr[currentPosition] = this.#arr[limitPos];
+            this.#arr[limitPos] = item;
+        }
+        return this.#arr.pop();
+        
     }
 }
