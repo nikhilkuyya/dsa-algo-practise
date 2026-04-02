@@ -3,7 +3,8 @@
  * @param {function} comparator - Comparator function for heap elements.
  * @property {function} cmp - Comparator function.
  */
-export class Heap {  
+import { Heap } from './priority-queue';
+export class Heap2 {  
     constructor(comparator) { this.arr = []; this.cmp = comparator; }
     /**
      * Returns the size of the heap.
@@ -130,8 +131,6 @@ export function countActivityNotificationsUsingDualHeap(data, d) {
       } else if (minHeap.size() > maxHeap.size()) {
         pruneDelayed(minHeap);
         maxHeap.push(minHeap.pop());
-      }else {
-        console.log('here')
       }
     }
   
@@ -157,14 +156,12 @@ export function countActivityNotificationsUsingDualHeap(data, d) {
       // lazy remove out
       // mark outgoing value for lazy deletion
       updateMapCount(pendingRemovals, out, 1);
+      maxHeap.remove(out);
+      minHeap.remove(out);
+      rebalanceHeaps();
       // add incoming
       if (incoming <= maxHeap.peek()) maxHeap.push(incoming);
       else minHeap.push(incoming);
-  
-      // prune tops and rebalance
-      pruneDelayed(maxHeap); 
-      pruneDelayed(minHeap);
-      
       rebalanceHeaps();
     }
   
@@ -172,15 +169,6 @@ export function countActivityNotificationsUsingDualHeap(data, d) {
 }
 
 
-export function testHeap() {
-  const heap = new Heap((a, b) => a > b);
-  heap.push(1);
-  heap.push(2);
-  heap.push(3);
-  console.log(heap.arr);
-  console.log(heap.pop());
-  console.log(heap.arr);
-}
 
 // Backwards-compatible alias: keep the previous export name for existing imports/tests.
 export { countActivityNotificationsUsingDualHeap as countActivityNotificationsHeaps };

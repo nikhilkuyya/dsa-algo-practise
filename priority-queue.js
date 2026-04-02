@@ -11,6 +11,10 @@ export class Heap {
         return this.#arr.map((item) => item);
     }
 
+    peek() {
+        return this.#arr[0];
+    }
+
     size() {
         return this.#arr.length;
     }
