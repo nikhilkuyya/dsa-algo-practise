@@ -44,7 +44,7 @@ export class Heap {
                 this.#arr[leftChildPos] = item;
                 this.#arr[currentPosition] = leftChildValue;
                 currentPosition = leftChildPos;
-            }else {
+            } else {
                 const maxChildPosition = this.#comparator(leftChildValue, rightChildValue) ? leftChildPos : rightChildPos;
                 this.#arr[currentPosition] = this.#arr[maxChildPosition];
                 this.#arr[maxChildPosition] = item;
@@ -58,5 +58,38 @@ export class Heap {
         }
         return this.#arr.pop();
         
+    }
+
+    remove(item) {
+        const index = this.#arr.indexOf(item);
+        if(index === -1) {
+            return false;
+        }
+        let currentPosition = index;
+        let leftChildPos = 2 * currentPosition + 1;
+        let rightChildPos = 2 * currentPosition + 2;
+        const limitPos = this.#arr.length - 1;
+        while(leftChildPos <= limitPos) {
+            const rightChildValue = this.#arr[rightChildPos];
+            const leftChildValue = this.#arr[leftChildPos];
+            if(rightChildPos > limitPos) {
+                this.#arr[leftChildPos] = item;
+                this.#arr[currentPosition] = leftChildValue;
+                currentPosition = leftChildPos;
+            } else {
+                const newChildPosition = this.#comparator(leftChildValue, rightChildValue) ? leftChildPos : rightChildPos;
+                this.#arr[currentPosition] = this.#arr[newChildPosition];
+                this.#arr[newChildPosition] = item;
+                currentPosition = newChildPosition;
+            }
+            leftChildPos = 2 * currentPosition + 1;rightChildPos = 2 * currentPosition + 2;
+        }
+
+        if(currentPosition !== limitPos) {
+            this.#arr[currentPosition] = this.#arr[limitPos];
+            this.#arr[limitPos] = item;
+        }
+        this.#arr.pop();
+        return true;
     }
 }

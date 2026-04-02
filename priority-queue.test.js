@@ -100,4 +100,40 @@ describe('Heap', () => {
     expect(heap.pop()).toEqual(3);
     expect(heap.arr).toEqual([]);
   });
+
+  it("should remove an element from the heap for the case of pop", () => {
+    const heap = new Heap((a, b) => a < b);
+    heap.push(1);
+    heap.push(2);
+    heap.push(3);
+    expect(heap.arr).toEqual([1, 2, 3]);
+    expect(heap.remove(3)).toEqual(true);
+    expect(heap.arr).toEqual([1, 2]);
+    expect(heap.remove(3)).toEqual(false);
+    expect(heap.arr).toEqual([1, 2]);
+  })
+
+  it("should remove an element from the heap for the middle element", () => {
+    const heap = new Heap((a, b) => a < b);
+    heap.push(1);
+    heap.push(2);
+    heap.push(3);    
+    expect(heap.arr).toEqual([1, 2, 3]);
+    expect(heap.remove(2)).toEqual(true);
+    expect(heap.arr).toEqual([1, 3]);
+    expect(heap.remove(2)).toEqual(false);
+    expect(heap.arr).toEqual([1, 3]);
+  })
+
+  it("should remove the top element with removing the last element", () => {
+    const heap = new Heap((a, b) => a < b);
+    heap.push(1);
+    heap.push(2);
+    heap.push(3);
+    expect(heap.arr).toEqual([1, 2, 3]);
+    expect(heap.remove(1)).toEqual(true);
+    expect(heap.arr).toEqual([2, 3]);
+    expect(heap.remove(1)).toEqual(false);
+    expect(heap.arr).toEqual([2, 3]);
+  })
 });
