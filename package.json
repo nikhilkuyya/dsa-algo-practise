@@ -1,9 +1,11 @@
 {
   "name": "algo",
   "version": "1.0.0",
+  "type": "module",
   "main": "absolute-permutation.js",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest",
+    "invoices": "node scripts/serverless-invoices-monthly-calc.js"
   },
   "keywords": [],
   "author": "",

@@ -97,3 +97,74 @@ export class Heap {
         return true;
     }
 }
+
+// just for reference
+class GeneratedHeap {  
+    constructor(comparator) { this.arr = []; this.cmp = comparator; }
+    /**
+     * Returns the size of the heap.
+     * @returns {number} The size of the heap.
+     */
+    size() { return this.arr.length; }
+    /**
+     * Returns the top element of the heap.
+     * @returns {number} The top element of the heap.
+     */
+    peek() { return this.arr[0]; }
+    /**
+     * Adds an element to the heap.
+     * The element is added to the end of the array and then bubbled up to the correct position
+     * based on the comparator and keeping them like the max heap or min heap
+     * @param {number} x - The element to add.
+     */
+    push(x) {
+      this.arr.push(x);
+      // The current element is at index this.arr.length - 1.
+      let currentElementPos = this.arr.length - 1;
+      // While the current element is not the root, bubble up.
+      while (currentElementPos > 0) {
+        // The parent of the current element is at index (i - 1) / 2.
+        const parentPos = Math.floor((currentElementPos - 1) / 2);
+        // If the current element is greater than the parent, swap them.
+        if (this.cmp(this.arr[currentElementPos], this.arr[parentPos])) {
+          [this.arr[currentElementPos], this.arr[parentPos]] = [this.arr[parentPos], this.arr[currentElementPos]];
+          currentElementPos = parentPos;
+        } else break;
+      }
+    }
+
+    /**
+     * Removes and returns the top element of the heap.
+     * The last element is moved to the root and then bubbled down to the correct position.
+     * @returns {number} The top element of the heap.
+     */
+    pop() {
+      if (!this.arr.length) return undefined;
+      const top = this.arr[0];
+      const last = this.arr.pop();
+      // If the heap is not empty, the last element is moved to the root and then bubbled down to the correct position.
+      if (this.arr.length) {
+        this.arr[0] = last;
+        let currentElementPos = 0;
+        // While the current element has at least one child, bubble down.
+        while (true) {
+          // The left and right children of the current element are at indices 2 * currentElementPos + 1 and 2 * currentElementPos + 2.
+          // The best child is the one with the smaller value.
+          let leftChildPos = 2 * currentElementPos + 1, 
+          rightChildPos = 2 * currentElementPos + 2, 
+          best = currentElementPos;
+          // If the left child is smaller than the current element, it is the best child.
+          if (leftChildPos < this.arr.length && this.cmp(this.arr[leftChildPos], this.arr[best])) best = leftChildPos;
+          // If the right child is smaller than the current element, it is the best child.
+          if (rightChildPos < this.arr.length && this.cmp(this.arr[rightChildPos], this.arr[best])) best = rightChildPos;
+          // If the current element is the best child, break.
+          if (best === currentElementPos) break;
+          // Swap the current element with the best child.
+          [this.arr[currentElementPos], this.arr[best]] = [this.arr[best], this.arr[currentElementPos]];
+          // Update the current element position to the best child.
+          currentElementPos = best;
+        }
+      }
+      return top;
+    }
+}
