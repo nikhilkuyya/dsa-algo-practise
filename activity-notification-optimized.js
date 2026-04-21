@@ -20,6 +20,8 @@ export function countActivityNotificationsUsingDualHeap(data, d) {
   const maxHeap = new Heap((a, b) => a > b); // lower half
   const minHeap = new Heap((a, b) => a < b); // upper half
   const pendingRemovals = new Map(); // value -> count pending deletion
+  let maxHeapValidSize = 0;
+  let minHeapValidSize = 0;
 
   /**
    * Update a map counter by delta and remove the key if count hits zero.
@@ -51,20 +53,53 @@ export function countActivityNotificationsUsingDualHeap(data, d) {
    * when the total number of elements is odd.
    */
   function rebalanceHeaps() {
-    if (maxHeap.size() > minHeap.size() + 1) {
+    if (maxHeapValidSize > minHeapValidSize + 1) {
       pruneDelayed(maxHeap);
       minHeap.push(maxHeap.pop());
-    } else if (minHeap.size() > maxHeap.size()) {
+      maxHeapValidSize -= 1;
+      minHeapValidSize += 1;
+    } else if (minHeapValidSize > maxHeapValidSize) {
       pruneDelayed(minHeap);
       maxHeap.push(minHeap.pop());
+      minHeapValidSize -= 1;
+      maxHeapValidSize += 1;
     }
+  }
+
+  function addNumber(num) {
+    pruneDelayed(maxHeap);
+    if (!maxHeap.size() || num <= maxHeap.peek()) {
+      maxHeap.push(num);
+      maxHeapValidSize += 1;
+    } else {
+      minHeap.push(num);
+      minHeapValidSize += 1;
+    }
+    rebalanceHeaps();
+  }
+
+  function removeNumber(num) {
+    updateMapCount(pendingRemovals, num, 1);
+    pruneDelayed(maxHeap);
+
+    if (maxHeap.size() && num <= maxHeap.peek()) {
+      maxHeapValidSize -= 1;
+      if (num === maxHeap.peek()) {
+        pruneDelayed(maxHeap);
+      }
+    } else {
+      minHeapValidSize -= 1;
+      if (minHeap.size() && num === minHeap.peek()) {
+        pruneDelayed(minHeap);
+      }
+    }
+
+    rebalanceHeaps();
   }
 
   // initialize first d elements
   for (let i = 0; i < d; i++) {
-    if (!maxHeap.size() || data[i] <= maxHeap.peek()) maxHeap.push(data[i]);
-    else minHeap.push(data[i]);
-    rebalanceHeaps();
+    addNumber(data[i]);
   }
 
   let notifications = 0;
@@ -79,18 +114,8 @@ export function countActivityNotificationsUsingDualHeap(data, d) {
 
     // slide window: remove outgoing, add incoming
     const out = data[i - d], incoming = data[i];
-    // lazy remove out
-    // mark outgoing value for lazy deletion
-    updateMapCount(pendingRemovals, out, 1);
-    if(!maxHeap.remove(out)){
-      minHeap.remove(out);
-    }
-    
-    rebalanceHeaps();
-    // add incoming
-    if (incoming <= maxHeap.peek()) maxHeap.push(incoming);
-    else minHeap.push(incoming);
-    rebalanceHeaps();
+    removeNumber(out);
+    addNumber(incoming);
   }
 
   return notifications;
