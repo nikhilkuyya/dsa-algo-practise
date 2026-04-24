@@ -1,0 +1,18 @@
+{
+  "name": "algo",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "absolute-permutation.js",
+  "scripts": {
+    "test:hack": "vitest --dir hacker-rank ",
+    "invoices": "node hacker-rank/scripts/serverless-invoices-monthly-calc.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "vite": "^8.0.0",
+    "vitest": "^4.1.0"
+  }
+}
